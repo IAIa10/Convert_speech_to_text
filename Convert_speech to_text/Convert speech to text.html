@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>تحويل الكلام إلى نص</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>تحويل الكلام إلى نص</h1>
+
+    <div id="result"></div>
+
+    <script>
+        window.onload = function() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition(); // استخدام تقنية التعرف على الكلام في المتصفح
+
+            recognition.lang = 'en-US'; // اللغة المستهدفة هي الإنجليزية
+            recognition.continuous = false; // التعرف على الصوت مرة واحدة فقط
+            recognition.interimResults = false; // عدم الحصول على النتائج المؤقتة
+
+            recognition.onresult = function(event) {
+                const result = event.results[event.results.length - 1];
+                const transcript = result[0].transcript;
+
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = transcript;
+
+                // إرسال النص إلى صفحة PHP
+                const xhr = new XMLHttpRequest();
+                const url = 'save_text.php'; // استبدل برابط صفحة PHP الخاصة بك
+                const params = 'text=' + encodeURIComponent(transcript);
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        console.log('تم تخزين النص في قاعدة البيانات');
+                    }
+                };
+                xhr.send(params);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('حدث خطأ في التعرف على الكلام: ', event.error);
+            };
+
+            recognition.start();
+        };
+    </script>
+</body>
+
+</html>
